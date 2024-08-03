@@ -24,7 +24,6 @@ const links = [
 
 export default function NavLinks() {
   const pathname = usePathname();
-  console.log(pathname);
   return (
     <>
       {links.map((link) => {
@@ -41,7 +40,6 @@ export default function NavLinks() {
             )}
           >
             <LinkIcon className="w-6" />
-            {link.href === pathname ? 'yes': 'no'}
             <p className="hidden md:block">{link.name}</p>
           </Link>
         );
