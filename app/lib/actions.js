@@ -14,22 +14,72 @@ const FormSchema = z.object({
 });
  
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
+
+// Use Zod to update the expected types
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+ 
+// ...
+ 
+export async function updateInvoice(id, formData) {
+    const { customerId, amount, status } = UpdateInvoice.parse({
+      customerId: formData.get('customerId'),
+      amount: formData.get('amount'),
+      status: formData.get('status'),
+    });
+   
+    const amountInCents = amount * 100;
+   
+  try {
+    await sql`
+      UPDATE invoices
+      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      WHERE id = ${id}
+    `;
+  }
+  catch(ex){
+    return {
+      message: 'ERROR UPDATING'
+    }
+  }
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+}
  
 export async function createInvoice(formData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
+    const { customerId, amount, status } = CreateInvoice.parse({
+      customerId: formData.get('customerId'),
+      amount: formData.get('amount'),
+      status: formData.get('status'),
+    });
 
-  const amountInCents = amount*100;
-  const date = new Date().toISOString().split('T')[0];
+    const amountInCents = amount*100;
+    const date = new Date().toISOString().split('T')[0];
 
-  await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  `;
+  try {
+    await sql`
+      INSERT INTO invoices (customer_id, amount, status, date)
+      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+    `;
+  }
+  catch(ex){
+    console.log(ex);
+    return {
+      message: 'Error Creating' 
+    }
+  }
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
   
+}
+
+//export async function deleteInvoice(id: string) {
+export async function deleteInvoice(id) {
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    revalidatePath('/dashboard/invoices');
+  }
+  catch(ex){
+    console.log(ex);
+    throw ex;
+  }
 }

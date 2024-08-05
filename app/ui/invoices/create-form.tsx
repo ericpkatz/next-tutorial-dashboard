@@ -67,7 +67,6 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             <div className="flex gap-4">
               <div className="flex items-center">
                 <input
-                  defaultChecked= { true }
                   id="pending"
                   name="status"
                   type="radio"
